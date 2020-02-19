@@ -121,6 +121,7 @@ if __name__ == "__main__":
 	ks = Crawly('https://www.kouvolansanomat.fi')
 
 	functions = [FunctionDriver(iltalehtiFunction,il,db), FunctionDriver(kalevaFunction,kaleva,db), FunctionDriver(kouvolaFunction,ks,db)]
+	crawlers = [il, kaleva, ks]
 
 	while True:	
 
@@ -133,12 +134,11 @@ if __name__ == "__main__":
 		db.updateTime()
 			
 		# wait 30 minutes before updating results
-		sleep(20)
+		sleep(1800)
 
 		# get latest data from web
-		il.reinitialize()	
-		kaleva.reinitialize()
-		ks.reinitialize()
+		for crawler in crawlers:
+			crawler.reinitialize()
 
 		print(" ")
 
