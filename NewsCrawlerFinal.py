@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 import mysql.connector
 
-
+# class for getting html data from website and making a 'soup' of it to be analyzed
 class Crawly:
 
 	_parser = 'lxml'
@@ -21,16 +21,28 @@ class Crawly:
 		res = requests.get(self.address)
 		self.soup = BS(res.text, self._parser)
 
-		
+# class for doing functions with two parameters
+class FunctionDriver:
+	
+	def __init__(self, function, function_parameter1, function_parameter2):
+		self._myfunction = function
+		self._parameter_1 = function_parameter1
+		self._parameter_2 = function_parameter2
+
+	# self-explanatory
+	def doFunction(self):
+		self._myfunction(self._parameter_1, self._parameter_2)
+
+# class for - you guessed it - handling database events used in this program
 class DatabaseHandler:
 
 	# connects to database
 	def __init__(self):
 		self._mydb = mysql.connector.connect(
-			host="insert_hostname_here",
-			user="insert_username_here",
-			passwd="insert_password_here",
-			database="insert_db_name_here"
+			host="hostname",
+			user="user",
+			passwd="pw",
+			database="crawler-results"
 		) 
 		self._mycursor = self._mydb.cursor()
 
@@ -108,28 +120,25 @@ if __name__ == "__main__":
 	kaleva = Crawly('https://www.kaleva.fi')
 	ks = Crawly('https://www.kouvolansanomat.fi')
 
-	# each crawler needs to have an associated function
-	crawlers = [il, kaleva, ks]
-	# functions are called with their related crawler object as their parameter
-	myFunctions = [iltalehtiFunction, kalevaFunction, kouvolaFunction]
-	# this could be simplified by making a list/class that couples Crawly objects and their given functions
+	functions = [FunctionDriver(iltalehtiFunction,il,db), FunctionDriver(kalevaFunction,kaleva,db), FunctionDriver(kouvolaFunction,ks,db)]
 
 	while True:	
 
 		# calls crawler functions...
 		# these functions handle getting info from the web and inserting it into a database
-		index = 0
-		for function in myFunctions:
-			function(crawlers[index],db)
-			index += 1
-		
+		for function in functions:
+			function.doFunction()
+
 		# updates completion time of latest crawl
 		db.updateTime()
 			
 		# wait 30 minutes before updating results
-		sleep(1800)
-		for crawler in crawlers:
-			crawler.reinitialize()	
+		sleep(20)
+
+		# get latest data from web
+		il.reinitialize()	
+		kaleva.reinitialize()
+		ks.reinitialize()
 
 		print(" ")
 
